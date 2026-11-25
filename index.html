@@ -271,6 +271,21 @@ body.trip-open{overflow:hidden}
         <div class="parts" id="trAudList"></div>
       </div>
     </div>
+    <div class="panel" id="trGh" hidden>
+      <h2>Sincronización automática</h2>
+      <p class="muted" id="ghInfo"></p>
+      <div id="ghSetup" style="display:flex;flex-direction:column;gap:8px">
+        <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px" class="muted">
+          <li>Abre <a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Entrenador%20ATC" target="_blank" rel="noopener">esta página de GitHub</a> (ya viene marcado solo «gist»).</li>
+          <li>En «Expiration» elige «No expiration» y pulsa «Generate token».</li>
+          <li>Copia la clave (empieza por ghp_) y pégala aquí. Repite solo este paso en cada dispositivo.</li>
+        </ol>
+        <input type="password" id="ghTok" placeholder="ghp_…" autocomplete="off" style="font-size:16px">
+        <div class="row"><button class="btn primary" id="ghGo">Conectar</button></div>
+      </div>
+      <div class="row" id="ghOn" hidden><button class="btn" id="ghNow">Sincronizar ahora</button><button class="btn" id="ghOff">Desconectar este dispositivo</button></div>
+      <p class="muted" id="ghMsg" aria-live="polite"></p>
+    </div>
     <div class="panel" id="trSync">
       <h2>Pasar el progreso</h2>
       <p class="muted">La app del iPhone y el Entrenador de claude.ai guardan el progreso por separado. Para juntarlos: copia aquí, pega en el otro y pulsa «Combinar». Se suman tarjetas, resultados, temas aprobados, trampas y por dónde vas en los audios; de cada tarjeta se queda el repaso más reciente.</p>
@@ -587,7 +602,7 @@ const LS = "atc-trainer-v1";
 let db = null, mode = "local";
 let SRS = {}, RESULTS = [], CUSTOM = [], TPROG = {}, TRAP = {};
 function lsLoad(){ try{ const d=JSON.parse(localStorage.getItem(LS)||"{}"); SRS=d.srs||{}; RESULTS=d.results||[]; CUSTOM=d.cards||[]; TPROG=d.temas||{}; TRAP=d.trampas||{}; }catch(e){} }
-function lsSave(){ try{ localStorage.setItem(LS, JSON.stringify({srs:SRS,results:RESULTS,cards:CUSTOM,temas:TPROG,trampas:TRAP})); }catch(e){} }
+function lsSave(){ try{ localStorage.setItem(LS, JSON.stringify({srs:SRS,results:RESULTS,cards:CUSTOM,temas:TPROG,trampas:TRAP})); }catch(e){} if (typeof ghLater==="function") ghLater(); }
 function saveTprog(id){ lsSave(); if (db) db.collection("temas").doc(id).set(TPROG[id]).catch(()=>{}); }
 function setSync(t){ $("#sync").textContent = t; }
 const writeQ = {};
@@ -1213,7 +1228,7 @@ let AUD = {};
 const AKEY = LS+"-audio";
 let ASTATE = {};
 try{ ASTATE = JSON.parse(localStorage.getItem(AKEY)||"{}"); }catch(e){ ASTATE = {}; }
-function audSave(){ try{ localStorage.setItem(AKEY, JSON.stringify(ASTATE)); }catch(e){} }
+function audSave(){ try{ localStorage.setItem(AKEY, JSON.stringify(ASTATE)); }catch(e){} if (typeof ghLater==="function") ghLater(20000); }
 function audState(src){ return (ASTATE.pos && ASTATE.pos[src]) || {t:0, done:false}; }
 function audMin(n){ return Math.round((AUD[n]||[]).reduce((a,x)=>a+(x.seg||0),0)/60); }
 function mmss(x){ x = Math.max(0, Math.floor(x||0)); const h = Math.floor(x/3600), m = Math.floor(x%3600/60), s2 = x%60; return (h? h+":"+String(m).padStart(2,"0") : m)+":"+String(s2).padStart(2,"0"); }
@@ -2044,6 +2059,82 @@ function mergeData(d){
   audSave(); lsSave(); refreshCards(); renderTemas(); renderTrayecto(); renderSim();
   return n;
 }
+
+/* --- sincronización automática entre dispositivos (versión instalable): un gist secreto de GitHub,
+   cifrado con la misma clave que el contenido. Al abrir baja y combina; al cambiar algo sube. --- */
+const GHK = LS+"-gh", GHDESC = "entrenador-atc-sync", GHFILE = "progreso.enc";
+let GH = null; try{ GH = JSON.parse(localStorage.getItem(GHK)||"null"); }catch(e){ GH = null; }
+let ghTimer = null, ghBusy = false, ghQuiet = false, ghLast = 0;
+function ghKeyRaw(){ try{ return localStorage.getItem("atc-movil-key"); }catch(e){ return null; } }
+function ghSave(){ try{ if (GH) localStorage.setItem(GHK, JSON.stringify(GH)); else localStorage.removeItem(GHK); }catch(e){} }
+async function ghKey(usage){ const raw = Uint8Array.from(atob(ghKeyRaw()), c=>c.charCodeAt(0)); return crypto.subtle.importKey("raw", raw, "AES-GCM", false, [usage]); }
+async function ghEnc(txt){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, await ghKey("encrypt"), new TextEncoder().encode(txt)));
+  const all = new Uint8Array(12+ct.length); all.set(iv); all.set(ct, 12);
+  let bin = ""; for (let i=0;i<all.length;i+=8192) bin += String.fromCharCode.apply(null, all.subarray(i, i+8192));
+  return btoa(bin);
+}
+async function ghDec(b64){
+  const all = Uint8Array.from(atob(b64.trim()), c=>c.charCodeAt(0));
+  return new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:all.slice(0,12)}, await ghKey("decrypt"), all.slice(12)));
+}
+async function gh(path, opt){
+  const r = await fetch("https://api.github.com"+path, Object.assign({cache:"no-store"}, opt||{}, {headers:Object.assign({"Authorization":"Bearer "+GH.token, "Accept":"application/vnd.github+json"}, (opt&&opt.headers)||{})}));
+  if (r.status===401) throw Object.assign(new Error("token"), {code:401});
+  if (!r.ok) throw new Error("http "+r.status);
+  return r.json();
+}
+async function ghPull(){
+  const g = await gh("/gists/"+GH.gist);
+  const f = g.files && g.files[GHFILE]; if (!f) return 0;
+  const txt = f.truncated ? await (await fetch(f.raw_url, {cache:"no-store"})).text() : f.content;
+  if (!txt || txt==="vacío") return 0;
+  ghQuiet = true;
+  try{ return mergeData(JSON.parse(await ghDec(txt))); } finally { ghQuiet = false; }
+}
+async function ghSync(why){
+  if (!GH || !GH.gist || !ghKeyRaw() || ghBusy) return;
+  if (!navigator.onLine){ ghStatus("Sin conexión: se sincroniza al volver la cobertura."); return; }
+  ghBusy = true; clearTimeout(ghTimer);
+  try{
+    const n = await ghPull();
+    await gh("/gists/"+GH.gist, {method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({files:{[GHFILE]:{content: await ghEnc(exportData())}}})});
+    ghLast = now(); GH.last = ghLast; ghSave();
+    ghStatus("Sincronizado"+(n ? " ("+n+" cambios de otro dispositivo)" : "")+" · "+new Date().toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}));
+  }catch(e){
+    ghStatus(e.code===401 ? "La clave de GitHub ya no vale. Pega una nueva abajo." : "No se pudo sincronizar ahora; lo reintento luego.");
+    if (e.code===401){ GH.token = ""; ghSave(); renderGh(); }
+  }finally{ ghBusy = false; }
+}
+function ghLater(ms){ if (!GH || !GH.gist || ghQuiet || !ghKeyRaw()) return; clearTimeout(ghTimer); ghTimer = setTimeout(()=>ghSync("cambio"), ms||8000); }
+function ghStatus(t){ setSync(t); const m = $("#ghMsg"); if (m) m.textContent = t; }
+function renderGh(){
+  const box = $("#trGh"); if (!box) return;
+  box.hidden = !ghKeyRaw();
+  const on = !!(GH && GH.token && GH.gist);
+  $("#ghSetup").hidden = on; $("#ghOn").hidden = !on;
+  $("#ghInfo").textContent = on ? "Activada en este dispositivo. Tu progreso se guarda cifrado en un gist secreto de tu GitHub y se combina solo al abrir la app y cada vez que cambias algo." : "Para tener el mismo progreso en el iPhone, el iPad y el ordenador sin copiar nada a mano. Se guarda cifrado con tu contraseña en un archivo secreto de tu cuenta de GitHub.";
+}
+$("#ghGo").addEventListener("click", async ()=>{
+  const tok = $("#ghTok").value.trim(); if (!tok){ $("#ghTok").focus(); return; }
+  GH = {token:tok, gist:null}; $("#ghMsg").textContent = "Conectando…";
+  try{
+    let found = null;
+    for (let page=1; page<=5 && !found; page++){
+      const list = await gh("/gists?per_page=100&page="+page);
+      found = list.find(g=>g.description===GHDESC && g.files && g.files[GHFILE]);
+      if (list.length<100) break;
+    }
+    if (!found) found = await gh("/gists", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({description:GHDESC, public:false, files:{[GHFILE]:{content:"vacío"}}})});
+    GH.gist = found.id; ghSave(); $("#ghTok").value = ""; renderGh();
+    await ghSync("conectar");
+  }catch(e){ GH = null; ghSave(); renderGh(); $("#ghMsg").textContent = e.code===401 ? "GitHub no acepta esa clave. Revisa que la has copiado entera." : "No pude conectar con GitHub. Comprueba la conexión."; }
+});
+$("#ghNow").addEventListener("click", ()=>ghSync("manual"));
+$("#ghOff").addEventListener("click", ()=>{ GH = null; ghSave(); renderGh(); ghStatus("Sincronización desactivada en este dispositivo"); });
+document.addEventListener("visibilitychange", ()=>{ if (!GH || !GH.gist) return; if (document.hidden){ if (ghTimer) ghSync("salir"); } else if (now()-ghLast > 60000) ghSync("volver"); });
+window.addEventListener("online", ()=>ghLater(2000));
 function syncMsg(t){ $("#syMsg").textContent = t; }
 $("#syCopy").addEventListener("click", async ()=>{
   const txt = exportData();
@@ -2177,7 +2268,7 @@ let startTab = STANDALONE ? "trayecto" : "hoy";
 try{ startTab = localStorage.getItem(LS+"-tab") || startTab; }catch(e){}
 show(["hoy","trayecto","temas","repaso","simulacro","psico","fase2","ingles","examinador","tecnicas","mazo"].includes(startTab)?startTab:"hoy");
 initStore();
-loadTemas().then(loadAudios).then(loadIngles);
+loadTemas().then(loadAudios).then(loadIngles).then(()=>{ renderGh(); if (GH && GH.gist) ghSync("abrir"); });
 (async ()=>{
   try{ sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; }catch(e){ sample=null; }
   if (!sample) $("#exUnavail").hidden = false;

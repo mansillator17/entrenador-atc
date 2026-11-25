@@ -1,5 +1,5 @@
 // Service worker del Entrenador ATC: app y temas siempre disponibles; audios guardados al escucharlos o descargarlos.
-const V = "atc-90fe0eb292";
+const V = "atc-3272275fe6";
 const AUDIO = "atc-audio-v1";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "audios.json", "icons/icon-180.png", "icons/icon-192.png", "ingles.json.enc", "crypt.json", "temas/tema1.json.enc", "temas/tema10.json.enc", "temas/tema2.json.enc", "temas/tema3.json.enc", "temas/tema4.json.enc", "temas/tema5.json.enc", "temas/tema6.json.enc", "temas/tema7.json.enc", "temas/tema8.json.enc", "temas/tema9.json.enc"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
