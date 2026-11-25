@@ -1,0 +1,186 @@
+{
+ "1": [
+  {
+   "parte": 1,
+   "titulo": "Las instituciones internacionales",
+   "src": "audios/tema01/Tema01_Parte1.mp3",
+   "seg": 922
+  },
+  {
+   "parte": 2,
+   "titulo": "Las instituciones nacionales",
+   "src": "audios/tema01/Tema01_Parte2.mp3",
+   "seg": 561
+  },
+  {
+   "parte": 3,
+   "titulo": "La legislación",
+   "src": "audios/tema01/Tema01_Parte3.mp3",
+   "seg": 427
+  },
+  {
+   "parte": 4,
+   "titulo": "La normativa aplicable a ENAIRE, y un test oral",
+   "src": "audios/tema01/Tema01_Parte4.mp3",
+   "seg": 939
+  }
+ ],
+ "2": [
+  {
+   "parte": 1,
+   "titulo": "Los códigos",
+   "src": "audios/tema02/Tema02_Parte1.mp3",
+   "seg": 934
+  },
+  {
+   "parte": 2,
+   "titulo": "Las aeronaves, y un test oral",
+   "src": "audios/tema02/Tema02_Parte2.mp3",
+   "seg": 954
+  }
+ ],
+ "3": [
+  {
+   "parte": 1,
+   "titulo": "Organización, la atmósfera, la atmósfera estándar y la altimetría",
+   "src": "audios/tema03/Tema03_Parte1.mp3",
+   "seg": 641
+  },
+  {
+   "parte": 2,
+   "titulo": "Circulación general, sistemas de presión, frentes, nubes, visibilidad y viento",
+   "src": "audios/tema03/Tema03_Parte2.mp3",
+   "seg": 427
+  },
+  {
+   "parte": 3,
+   "titulo": "Fenómenos peligrosos para el vuelo, y un test oral",
+   "src": "audios/tema03/Tema03_Parte3.mp3",
+   "seg": 681
+  }
+ ],
+ "4": [
+  {
+   "parte": 1,
+   "titulo": "La Tierra, sus movimientos, la navegación y los sistemas de referencia",
+   "src": "audios/tema04/Tema04_Parte1.mp3",
+   "seg": 449
+  },
+  {
+   "parte": 2,
+   "titulo": "Escalas, proyecciones, cartas aeronáuticas, y un test oral",
+   "src": "audios/tema04/Tema04_Parte2.mp3",
+   "seg": 732
+  }
+ ],
+ "5": [
+  {
+   "parte": 1,
+   "titulo": "El sistema de navegación, las técnicas, y la navegación basada en la performance",
+   "src": "audios/tema05/Tema05_Parte1.mp3",
+   "seg": 341
+  },
+  {
+   "parte": 2,
+   "titulo": "Las radioayudas, el ILS y las ayudas visuales",
+   "src": "audios/tema05/Tema05_Parte2.mp3",
+   "seg": 421
+  },
+  {
+   "parte": 3,
+   "titulo": "Satélites, sistemas autónomos, vigilancia, y un test oral",
+   "src": "audios/tema05/Tema05_Parte3.mp3",
+   "seg": 674
+  }
+ ],
+ "6": [
+  {
+   "parte": 1,
+   "titulo": "El plan de vuelo y los mensajes",
+   "src": "audios/tema06/Tema06_Parte1.mp3",
+   "seg": 383
+  },
+  {
+   "parte": 2,
+   "titulo": "La gestión de afluencia, el uso flexible del espacio aéreo, y un test oral",
+   "src": "audios/tema06/Tema06_Parte2.mp3",
+   "seg": 751
+  }
+ ],
+ "7": [
+  {
+   "parte": 1,
+   "titulo": "Entorno profesional, y un test oral",
+   "src": "audios/tema07/Tema07_Parte1.mp3",
+   "seg": 769
+  }
+ ],
+ "8": [
+  {
+   "parte": 1,
+   "titulo": "Modelos, visión sistémica, normativa y factores organizacionales",
+   "src": "audios/tema08/Tema08_Parte1.mp3",
+   "seg": 488
+  },
+  {
+   "parte": 2,
+   "titulo": "Factores psicológicos, comunicación, fatiga, estrés, error humano, y un test oral",
+   "src": "audios/tema08/Tema08_Parte2.mp3",
+   "seg": 771
+  }
+ ],
+ "9": [
+  {
+   "parte": 1,
+   "titulo": "Aerodinámica y mecánica del vuelo, y un test oral",
+   "src": "audios/tema09/Tema09_Parte1.mp3",
+   "seg": 870
+  }
+ ],
+ "10": [
+  {
+   "parte": 1,
+   "titulo": "Conceptos, normativa, requisitos y categorías",
+   "src": "audios/tema10/Tema10_Parte1.mp3",
+   "seg": 394
+  },
+  {
+   "parte": 2,
+   "titulo": "Integración en el espacio aéreo, U-space, despliegue en España, y un test oral",
+   "src": "audios/tema10/Tema10_Parte2.mp3",
+   "seg": 691
+  }
+ ],
+ "en": [
+  {
+   "parte": 1,
+   "titulo": "Fundamentos de la fraseología OACI",
+   "src": "audios/ingles/Ingles_Parte1.mp3",
+   "seg": 693
+  },
+  {
+   "parte": 2,
+   "titulo": "Fraseología en el aeropuerto. Autorización, rodaje, despegue y aterrizaje",
+   "src": "audios/ingles/Ingles_Parte2.mp3",
+   "seg": 568
+  },
+  {
+   "parte": 3,
+   "titulo": "Fraseología en salida, aproximación y ruta, y emergencias",
+   "src": "audios/ingles/Ingles_Parte3.mp3",
+   "seg": 632
+  },
+  {
+   "parte": 4,
+   "titulo": "Vocabulario en lenguaje claro para situaciones no rutinarias",
+   "src": "audios/ingles/Ingles_Parte4.mp3",
+   "seg": 454
+  },
+  {
+   "parte": 5,
+   "titulo": "Inglés C1 para la entrevista y vocabulario de la profesión",
+   "src": "audios/ingles/Ingles_Parte5.mp3",
+   "seg": 467
+  }
+ ]
+}
